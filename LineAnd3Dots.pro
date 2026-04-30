@@ -4,7 +4,14 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
 
-UI_DIR = $$PWD/build/ui
+win32:
+{
+    UI_DIR = $$PWD/src/MainWindow
+}
+unix:
+{
+    UI_DIR = $$PWD/build/ui
+}
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -26,8 +33,8 @@ FORMS += \
     src/MainWindow/mainwindow.ui
 
 TRANSLATIONS += \
-    translations/LineAnd3Dots_ru.ts \
-    translations/LineAnd3Dots_en.ts
+    translations/LineAnd3Dots_ru_RU.ts \
+    translations/LineAnd3Dots_en_US.ts
 
 RESOURCES += \
     src/MainWindow/resources.qrc
