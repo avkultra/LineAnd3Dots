@@ -114,7 +114,7 @@
      <normaloff>:/icons/restore.png</normaloff>:/icons/restore.png</iconset>
    </property>
    <property name="text">
-    <string>⟳ Сброс</string>
+    <string>Сброс</string>
    </property>
    <property name="toolTip">
     <string>Сбросить масштаб и позицию</string>
