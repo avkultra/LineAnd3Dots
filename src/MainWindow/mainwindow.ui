@@ -140,7 +140,7 @@
   <customwidget>
    <class>CGraphicsViewEx</class>
    <extends>QGraphicsView</extends>
-   <header>..\GraphicsViewEx\graphicsviewex.h</header>
+   <header>GraphicsViewEx/graphicsviewex.h</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -54,7 +54,7 @@ CMainWindow::~CMainWindow()
 
 bool CMainWindow::parseJsonFile(const QString& filename)
 {
-    QFile file(filename);
+   QFile file(filename);
     if (!file.open(QIODevice::ReadOnly))
     {
         return false;

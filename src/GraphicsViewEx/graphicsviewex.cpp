@@ -10,6 +10,7 @@
 #include <QBrush>
 #include <QColor>
 #include <cmath>
+#include <QWheelEvent>
 
 CGraphicsViewEx::CGraphicsViewEx(QWidget* parent)
     : QGraphicsView(parent)
@@ -172,6 +173,7 @@ void CGraphicsViewEx::drawLineBetween(double x1, double y1, double x2, double y2
 
 void CGraphicsViewEx::wheelEvent(QWheelEvent* event)
 {
+	/*
     double factor = 1.1;
     if (event->angleDelta().y() > 0)
     {
@@ -183,6 +185,7 @@ void CGraphicsViewEx::wheelEvent(QWheelEvent* event)
         scale(1.0 / factor, 1.0 / factor);
         m_zoom /= factor;
     }
+	*/
 }
 
 void CGraphicsViewEx::mousePressEvent(QMouseEvent* event)
