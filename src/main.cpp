@@ -13,7 +13,8 @@ int main(int argc, char *argv[])
     for (const QString& locale : uiLanguages)
     {
         const QString baseName = "LineAnd3Dots_" + QLocale(locale).name();
-        if (translator.load("../translations/" + baseName))
+        const QString baseNameTmp = "../../translations/" + baseName;
+        if (translator.load(baseNameTmp))
         {
             a.installTranslator(&translator);
             break;
