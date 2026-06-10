@@ -36,7 +36,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
@@ -59,6 +59,7 @@
    <addaction name="actionResetView"/>
    <addaction name="separator"/>
    <addaction name="actionToggleGrid"/>
+   <addaction name="actionAnimate"/>
   </widget>
   <action name="actionLoadFile">
    <property name="icon">
@@ -133,6 +134,14 @@
    </property>
    <property name="toolTip">
     <string>Показать/скрыть сетку</string>
+   </property>
+  </action>
+  <action name="actionAnimate">
+   <property name="text">
+    <string>Animation</string>
+   </property>
+   <property name="toolTip">
+    <string>Анимация</string>
    </property>
   </action>
  </widget>

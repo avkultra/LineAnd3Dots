@@ -12,6 +12,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class CGraphicsViewEx;
+class QTimer;
 class CMainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -43,6 +44,18 @@ private:
     double findLine();
 private:
      Ui::MainWindow* ui;
+
+private slots:
+    void onAnimationTimer();
+    void onStartAnimation();
+
+private:
+    QTimer* m_animationTimer;
+    double m_currentAngle;
+    int m_currentPivotId;
+    int m_animationStep;
+    std::vector<int> m_animationOrder;
+    bool m_isAnimating;
 };
 
 #endif // MAINWINDOW_H

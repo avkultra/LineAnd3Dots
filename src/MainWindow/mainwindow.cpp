@@ -13,11 +13,18 @@
 #include <cmath>
 #include <algorithm>
 #include "const.h"
+#include <QTimer>
+#include <QGraphicsLineItem>
 
 CMainWindow::CMainWindow(QWidget* parent) : QMainWindow(parent)
   , m_bHasData(false)
   , m_startId(-1)
   , ui(new Ui::MainWindow)
+  , m_currentAngle(0.0)
+  , m_currentPivotId(-1)
+  , m_animationStep(0)
+  , m_isAnimating(false)
+
 {
     ui->setupUi(this);
     setWindowTitle("Line solver");
@@ -43,6 +50,10 @@ CMainWindow::CMainWindow(QWidget* parent) : QMainWindow(parent)
     connect(ui->actionZoomOut, &QAction::triggered, this, &CMainWindow::onZoomOut);
     connect(ui->actionResetView, &QAction::triggered, this, &CMainWindow::onResetView);
     connect(ui->actionToggleGrid, &QAction::toggled, this, &CMainWindow::onToggleGrid);
+    connect(ui->actionAnimate, &QAction::triggered, this, &CMainWindow::onStartAnimation);
+
+    m_animationTimer = new QTimer(this);
+    connect(m_animationTimer, &QTimer::timeout, this, &CMainWindow::onAnimationTimer);
 
     ui->actionSolve->setEnabled(false);
 }
@@ -412,4 +423,135 @@ void CMainWindow::onResetView()
 {
     m_graphView->resetTransform();
     m_graphView->centerOn(0, 0);
+}
+
+void CMainWindow::onStartAnimation()
+{
+    if (!m_bHasData || m_vPoints.empty()) return;
+
+    double solutionAngle = findLine();
+    if (solutionAngle <= -dMinAng) return;
+
+    // Строим порядок обхода точек
+    m_animationOrder.clear();
+    std::vector<bool> visited(m_vPoints.size(), false);
+    visited[m_startId] = true;
+    m_animationOrder.push_back(m_startId);
+
+    int currentId = m_startId;
+    double currentAngle = solutionAngle;
+
+    for (size_t step = 0; step < m_vPoints.size() - 1; ++step)
+    {
+        int nextId = -1;
+        double minDelta = 1e9;
+
+        for (size_t i = 0; i < m_vPoints.size(); ++i) {
+            if ((int)i == currentId) continue;
+            double angle = compAngl(m_vPoints[currentId], m_vPoints[i]);
+            double delta = angle - currentAngle;
+            while (delta <= 0) delta += 2 * M_PI;
+            while (delta >= 2 * M_PI) delta -= 2 * M_PI;
+            if (delta < minDelta - 1e-9)
+            {
+                minDelta = delta;
+                nextId = i;
+            }
+        }
+
+        if (nextId == -1) break;
+        currentAngle = compAngl(m_vPoints[currentId], m_vPoints[nextId]);
+        currentId = nextId;
+        m_animationOrder.push_back(currentId);
+    }
+
+    // Начинаем анимацию
+    m_currentPivotId = m_startId;
+    m_currentAngle = solutionAngle;
+    m_animationStep = 0;
+    m_isAnimating = true;
+
+    // Очищаем и перерисовываем точки
+    displayPoints();
+
+    // Запускаем таймер (50 мс ~ 20 fps)
+    m_animationTimer->start(50);
+}
+
+void CMainWindow::onAnimationTimer()
+{
+    if (!m_isAnimating) return;
+
+    // Очищаем предыдущую линию (но не сетку)
+    // Нужно добавить метод для удаления только анимационных линий
+    // или хранить их отдельно
+
+    // Вращаем прямую
+    static double rotationSpeed = 0.05; // радиан за кадр
+    m_currentAngle += rotationSpeed;
+
+    // Проверяем, не коснулись ли следующей точки
+    if (m_animationStep < (int)m_animationOrder.size() - 1) {
+        int nextPointId = m_animationOrder[m_animationStep + 1];
+        double targetAngle = compAngl(m_vPoints[m_currentPivotId], m_vPoints[nextPointId]);
+
+        // Нормализуем углы
+        double delta = targetAngle - (m_currentAngle - rotationSpeed);
+        while (delta <= 0) delta += 2 * M_PI;
+
+        // Если достигли целевого угла или перескочили
+        if (delta <= rotationSpeed + 0.01) {
+            m_currentAngle = targetAngle;
+            m_animationStep++;
+
+            if (m_animationStep < (int)m_animationOrder.size()) {
+                m_currentPivotId = m_animationOrder[m_animationStep];
+
+                // Подсвечиваем текущую опорную точку
+                displayPoints();
+
+                // Дополнительно подсвечиваем текущую точку
+                m_graphView->drawPoint(
+                    m_vPoints[m_currentPivotId].m_dX,
+                    m_vPoints[m_currentPivotId].m_dY,
+                    m_vPoints[m_currentPivotId].m_id,
+                    true
+                    );
+            }
+        }
+    }
+
+    // Отрисовываем текущую прямую
+    const CPoint& pivot = m_vPoints[m_currentPivotId];
+
+    // Используем временное хранилище для анимационной линии
+    static QGraphicsLineItem* animLine = nullptr;
+    if (animLine) {
+        delete animLine;
+        animLine = nullptr;
+    }
+
+    // Рисуем новую линию
+    double dx = cos(m_currentAngle);
+    double dy = sin(m_currentAngle);
+    double len = 1500;
+
+    animLine = m_graphView->getScene()->addLine(
+        pivot.m_dX - dx * len,
+        pivot.m_dY - dy * len,
+        pivot.m_dX + dx * len,
+        pivot.m_dY + dy * len,
+        QPen(QColor(255, 0, 0, 200), 3)
+        );
+
+    // Проверяем завершение анимации (прошли все точки)
+    if (m_animationStep >= (int)m_animationOrder.size() - 1) {
+        // Анимация завершена
+        m_animationTimer->stop();
+        m_isAnimating = false;
+
+        QMessageBox::information(this, "Animation",
+                                 "Full cycle completed!\n"
+                                 "Points visited: " + QString::number(m_animationOrder.size()));
+    }
 }

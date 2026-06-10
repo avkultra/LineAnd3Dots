@@ -25,6 +25,9 @@ public:
     bool isGridVisible() const { return m_bGridVisible; }
     void toggleGrid();
 
+public:
+    QGraphicsScene* getScene() { return m_scene; }
+
 protected:
     void wheelEvent(QWheelEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
